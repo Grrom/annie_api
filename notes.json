@@ -1,0 +1,14 @@
+{
+  "features": [
+    "saucenao integration",
+    "myanimelist integration",
+    "meme_api integration",
+    "Anime recommendation",
+    "kanji and kana quiz",
+    "code vault",
+    "meme vault"
+  ],
+  "optional features": ["alerts", "reminders", "play anime op"],
+  "target platform bot": ["discord", "facebook and messenger", "github"],
+  "target platform client": ["android/ios", "linux and windows", "website"]
+}
