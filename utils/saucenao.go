@@ -3,17 +3,20 @@ package saucenao
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
-// A SaucenaoClient is used to make requests to the SauceNao API.
 type SaucenaoClient struct {
-	APIKey            string
-	MinimumSimilarity int
-	DatabaseBitmask   int
-	AmountOfResults   int
+	APIKey          string
+	DatabaseBitmask int
+	AmountOfResults int
+	OutputType      int
 }
 
 // The result struct, the result of the query is directly parsed into this struct.
@@ -63,18 +66,31 @@ type SaucenaoResultsData struct {
 	Title   string   `json:"title"`
 	Source  string   `json:"source"`
 
-	//// To allow for other websites, add their fields here. ////
-
+	// it's just a general struct, it doesn't get all of the data from all other sources
 }
 
-func New(APIKey string) (s *SaucenaoClient) {
-	s = &SaucenaoClient{
-		APIKey:            APIKey,
-		MinimumSimilarity: 80,
-		DatabaseBitmask:   999,
-		AmountOfResults:   1,
-	}
+type Sauce struct {
+	Link      string  `json:"link"`
+	Accuracy  float64 `json:"accuracy"`
+	Title     string  `json:"title"`
+	Thumbnail string  `json:"thumbnail"`
+}
 
+func saucenaoToken() string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error: .Err:%s", err)
+	}
+	return os.Getenv("SAUCENAO_TOKEN")
+}
+
+func New() (s *SaucenaoClient) {
+	s = &SaucenaoClient{
+		APIKey:          saucenaoToken(),
+		DatabaseBitmask: 999,
+		AmountOfResults: 1,
+		OutputType:      2,
+	}
 	return
 }
 
@@ -84,10 +100,8 @@ func (s SaucenaoClient) FromURL(imageurl string) (res SaucenaoResult, err error)
 	parsedUrl, _ := url.Parse("http://saucenao.com/search.php")
 	queryString := parsedUrl.Query()
 
-	jsonOutput := "2"
-	queryString.Set("output_type", jsonOutput)
+	queryString.Set("output_type", strconv.Itoa(s.OutputType))
 	queryString.Set("numres", strconv.Itoa(s.AmountOfResults))
-	queryString.Set("minsim", strconv.Itoa(s.MinimumSimilarity))
 	queryString.Set("dbmask", strconv.Itoa(s.DatabaseBitmask))
 	queryString.Set("api_key", s.APIKey)
 	queryString.Set("url", imageurl)

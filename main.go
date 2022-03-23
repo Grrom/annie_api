@@ -3,32 +3,15 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 
 	saucenao "github.com/Grrom/annie_api/utils"
 )
 
-type sauce struct {
-	Link      string  `json:"link"`
-	Accuracy  float64 `json:"accuracy"`
-	Title     string  `json:"title"`
-	Thumbnail string  `json:"thumbnail"`
-}
-
-func saucenaoToken() string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error: .Err:%s", err)
-	}
-	return os.Getenv("SAUCENAO_TOKEN")
-}
-
 func getSauce(c *gin.Context) {
-	saucenaoClient := saucenao.New(saucenaoToken())
+	saucenaoClient := saucenao.New()
 	result, err := saucenaoClient.FromURL(c.Query("image_url"))
 
 	if err != nil {
@@ -43,7 +26,7 @@ func getSauce(c *gin.Context) {
 
 	c.IndentedJSON(
 		http.StatusOK,
-		sauce{
+		saucenao.Sauce{
 			Link:      result.Data[0].Data.ExtUrls[0],
 			Accuracy:  similarity,
 			Title:     result.Data[0].Data.Source,
